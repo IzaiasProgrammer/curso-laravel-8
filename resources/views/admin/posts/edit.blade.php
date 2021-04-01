@@ -1,18 +1,13 @@
-<h1>Editar o Post <strong>{{ $post->title }}</strong></h1>
+@extends('admin.layouts.app')
 
-@if ($errors->any())
-    <ul>
-        @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-        @endforeach
-    </ul>
+@section('title', 'Editar o Post {post->title}')
 
-@endif
+@section('content')
+    <h1>Editar o Post <strong>{{ $post->title }}</strong></h1>
 
-<form action="{{ route('posts.update', $post->id) }}" method="post">
-    @csrf
-    @method('PUT')
-    <input type="text" name="title" id="title" placeholder="Título" value="{{ $post->title }}">
-    <textarea name="content" id="content" cols="30" rows="4" placeholder="Conteúdo">{{ $post->content }}</textarea>
-    <button type="submit">Enviar</button>
-</form>
+    <form action="{{ route('posts.update', $post->id) }}" method="post" enctype="multipart/form-data">
+
+        @method('PUT')
+        @include('admin.posts._partials.form')
+    </form>
+@endsection

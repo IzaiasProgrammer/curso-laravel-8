@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Http\Requests\StoreUpdatePost;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -24,7 +26,16 @@ class PostController extends Controller
 
     public function store(StoreUpdatePost $request)
     {
-        Post::create($request->all());
+        $data = $request->all();
+
+        if ($request->image->isValid()) {
+
+            $nameFile = Str::of($request->title)->slug('-') . '.' .$request->image->getClientOriginalExtension();
+
+            $image = $request->image->storeAs('posts', $nameFile);
+            $data['image'] = $image;
+        }
+        Post::create($data);
 
         return \redirect()
             ->route('posts.index')
@@ -46,11 +57,11 @@ class PostController extends Controller
 
     public function destroy($id)
     {
-        $post = Post::find($id);
-
-        if (!$post) {
+        if (!$post = Post::find($id))
             return \redirect()->route('posts.index');
-        }
+
+        if (Storage::exists($post->image))
+            Storage::delete($post->image);
 
         $post->delete();
 
@@ -75,10 +86,34 @@ class PostController extends Controller
             return \redirect()->back();
         }
 
-        $post->update($request->all());
+        $data = $request->all();
+
+        if ($request->image && $request->image->isValid()) {
+
+        if (Storage::exists($post->image))
+            Storage::delete($post->image);
+
+            $nameFile = Str::of($request->title)->slug('-') . '.' .$request->image->getClientOriginalExtension();
+
+            $image = $request->image->storeAs('posts', $nameFile);
+            $data['image'] = $image;
+        }
+
+        $post->update($data);
 
         return \redirect()
             ->route('posts.index')
             ->with('message', 'Post atualizado com Sucesso');
+    }
+
+    public function search(Request $request)
+    {
+        $filters = $request->except('_token');
+
+        $posts = Post::where('title', 'LIKE', "%{$request->search}%")
+                    ->orWhere('content', 'LIKE', "%{$request->search}%")
+                    ->paginate();
+
+        return \view('admin.posts.index', \compact('posts', 'filters'));
     }
 }

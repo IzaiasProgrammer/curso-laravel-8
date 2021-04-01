@@ -15,6 +15,8 @@ use App\Http\Controllers\{
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::post('/posts/search', [PostController::class, 'search'])->name('posts.search');
 Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
 Route::put('/posts/{id}', [PostController::class, 'update'])->name('posts.update');
 Route::get('/posts/edit/{id}', [PostController::class, 'edit'])->name('posts.edit');
